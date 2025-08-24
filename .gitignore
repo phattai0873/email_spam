@@ -1,0 +1,29 @@
+# Python
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+*.db
+*.sqlite3
+
+# Virtual env
+env/
+venv/
+.venv/
+
+
+# Jupyter Notebook checkpoints
+.ipynb_checkpoints/
+
+# Secrets
+.env
+credentials.json
+token.json
+*.pickle
+
+# Logs
+*.log
+
+# IDE configs
+.vscode/
+.idea/
