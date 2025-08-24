@@ -15,24 +15,17 @@ def get_gmail_service():
     creds = None
 
     token_env = os.getenv("GOOGLE_TOKEN")
-    if token_env:
-        creds = Credentials.from_authorized_user_info(json.loads(token_env), SCOPES)
+    if not token_env:
+        raise Exception("Missing GOOGLE_TOKEN in .env or Render ENV")
 
-    if not creds or not creds.valid:
-        if creds and creds.expired and creds.refresh_token:
-            creds.refresh(Request())
-        else:
-            creds_env = os.getenv("GOOGLE_CREDENTIALS")
-            if not creds_env:
-                raise Exception("Missing GOOGLE_CREDENTIALS in .env")
-            creds_dict = json.loads(creds_env)
+    creds = Credentials.from_authorized_user_info(json.loads(token_env), SCOPES)
 
-            flow = InstalledAppFlow.from_client_config(creds_dict, SCOPES)
-            creds = flow.run_local_server(port=0)
+    # Nếu token hết hạn thì refresh
+    if creds and creds.expired and creds.refresh_token:
+        creds.refresh(Request())
+        print("Refreshed token:", creds.to_json())  # chỉ để debug log
 
-        print("New token:", creds.to_json())
-
-    return build('gmail', 'v1', credentials=creds)
+    return build("gmail", "v1", credentials=creds)
 
 
 def clean_email_body(body_html):
