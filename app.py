@@ -1,10 +1,11 @@
 from flask import Flask, render_template, request
 import joblib
+from text_preprocess import preprocess_text
 from gmail_service import get_latest_emails
 
 app = Flask(__name__)
 
-# Load vectorizer và models
+# Load vectorizer + models
 vectorizer = joblib.load("models/vectorizer.joblib")
 models = {
     "Naive Bayes": joblib.load("models/naive_bayes.joblib"),
@@ -12,6 +13,15 @@ models = {
     "SVM": joblib.load("models/svm.joblib")
 }
 
+def predict_text(text, algo="Naive Bayes"):
+    text_clean = preprocess_text(text)
+    X = vectorizer.transform([text_clean])
+    model = models[algo]
+    return model.predict(X)[0]
+
+# =========================
+# Route nhập text từ user
+# =========================
 @app.route("/", methods=["GET", "POST"])
 def index():
     prediction = None
@@ -21,13 +31,7 @@ def index():
     if request.method == "POST":
         algo = request.form["algorithm"]
         text = request.form["message"]
-
-        # vector hóa văn bản nhập vào
-        X = vectorizer.transform([text])
-
-        # lấy model đã load sẵn
-        model = models[algo]
-        prediction = model.predict(X)[0]
+        prediction = predict_text(text, algo)
 
     return render_template("index.html",
                            algorithms=list(models.keys()),
@@ -35,6 +39,9 @@ def index():
                            text=text,
                            algo=algo)
 
+# =========================
+# Route lấy email Gmail và dự đoán
+# =========================
 @app.route("/gmail")
 def gmail_emails():
     emails = get_latest_emails(5)
@@ -42,9 +49,8 @@ def gmail_emails():
 
     for e in emails:
         preds = {}
-        for name, model in models.items():
-            vec = vectorizer.transform([e["body"]])
-            preds[name] = model.predict(vec)[0]
+        for name in models.keys():
+            preds[name] = predict_text(e["body"], name)
 
         results.append({
             "subject": e["subject"],
