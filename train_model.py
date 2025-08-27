@@ -9,6 +9,7 @@ from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.metrics import accuracy_score, precision_score, recall_score, f1_score, classification_report
 from sklearn.naive_bayes import MultinomialNB
 from sklearn.linear_model import LogisticRegression
+from sklearn.ensemble import RandomForestClassifier
 from sklearn.svm import LinearSVC
 from sklearn.model_selection import train_test_split, GridSearchCV
 from text_preprocess import preprocess_text
@@ -102,6 +103,21 @@ best_svm = grid_svm.best_estimator_
 print("\n✅ SVM Best Params:", grid_svm.best_params_)
 evaluate_model("SVM", best_svm, X_test, y_test)
 
+# ----- Random Forest -----
+param_rf = {
+    "n_estimators": [100, 200, 300],
+    "max_depth": [None, 10, 20, 30],
+    "min_samples_split": [2, 5, 10],
+    "min_samples_leaf": [1, 2, 4],
+}
+grid_rf = GridSearchCV(RandomForestClassifier(class_weight="balanced", random_state=42),
+                       param_grid=param_rf,
+                       cv=5, scoring="f1_macro", n_jobs=-1)
+grid_rf.fit(X_train, y_train)
+best_rf = grid_rf.best_estimator_
+print("\n✅ Random Forest Best Params:", grid_rf.best_params_)
+evaluate_model("Random Forest", best_rf, X_test, y_test)
+
 # =========================
 # 6. Vẽ biểu đồ
 # =========================
@@ -147,5 +163,6 @@ joblib.dump(vectorizer, "models/vectorizer.joblib")
 joblib.dump(best_nb, "models/naive_bayes.joblib")
 joblib.dump(best_log, "models/logistic.joblib")
 joblib.dump(best_svm, "models/svm.joblib")
+joblib.dump(best_rf, "models/random_forest.joblib")
 
 print("\nSaved best models to /models/")

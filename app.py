@@ -10,7 +10,8 @@ vectorizer = joblib.load("models/vectorizer.joblib")
 models = {
     "Naive Bayes": joblib.load("models/naive_bayes.joblib"),
     "Logistic Regression": joblib.load("models/logistic.joblib"),
-    "SVM": joblib.load("models/svm.joblib")
+    "SVM": joblib.load("models/svm.joblib"),
+    "Random Forest": joblib.load("models/random_forest.joblib")
 }
 
 def predict_text(text, algo="Naive Bayes"):
